@@ -189,6 +189,15 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     private String assignedNode;
 
     /**
+     * Tags associated with this project.
+     *
+     * Tags can be used for a variety of purposes, for
+     * example to control which {@link Executor}s this
+     * project may be build on.
+     */
+    private Tags tags = new Tags();
+
+    /**
      * True if this project can be built on any node.
      *
      * <p>
@@ -402,6 +411,25 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
      */
     public Set<Label> getRelevantLabels() {
         return Collections.singleton(getAssignedLabel());
+    }
+
+    /**
+     * Returns the {@link Tag}s associated with this project.
+     *
+     * @return the tags, never <code>null</code>
+     */
+    public Tags getTags() {
+        return tags;
+    }
+
+    /**
+     * Sets the tags associated with this project.
+     *
+     * @param tags the tags, may be <code>null</code>.
+     */
+    public void setTags(Tags tags)
+    {
+        this.tags = tags == null ? new Tags() : tags;
     }
 
     /**

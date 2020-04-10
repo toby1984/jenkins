@@ -108,6 +108,21 @@ public abstract class CauseOfBlockage {
     }
 
     /**
+     * Build is blocked because no executor matching the task's tags was available.
+     */
+    public static final class BecauseTagsNotMatched extends CauseOfBlockage {
+
+        public String getShortDescription() {
+            return Messages.Queue_TagsNotMatched();
+        }
+
+        @Override
+        public void print(TaskListener listener) {
+            listener.getLogger().println(Messages.Queue_TagsNotMatched());
+        }
+    }
+
+    /**
      * Build is blocked because a node (or its retention strategy) is not accepting tasks.
      * @since 2.37
      */

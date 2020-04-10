@@ -37,6 +37,7 @@ import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.*;
 import hudson.Launcher.LocalLauncher;
+import hudson.model.ExecutorConfig;
 import hudson.security.csrf.DefaultCrumbIssuer;
 import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import jenkins.AgentProtocol;
@@ -359,8 +360,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Number of executors of the master node.
+     * @deprecated Use the number of executor configs to derive the number of
      */
+    @Deprecated
     private int numExecutors = 2;
+
+    /**
+     * Configuration for each executor.
+     */
+    private List<ExecutorConfig> executorConfigs;
 
     /**
      * Job allocation strategy.
@@ -5411,4 +5419,33 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    /**
+     * Returns the configuration of each executor.
+     * @return executor configurations, never <code>null</code>
+     */
+    public List<ExecutorConfig> getExecutorConfigs()
+    {
+        if ( executorConfigs == null ) {
+            executorConfigs = new ArrayList<>();
+        }
+        return executorConfigs;
+    }
+
+    /**
+     * Sets the executor configuration to use.
+     *
+     * If the number of executor configurations is
+     *
+     * - less than {@link #getNumExecutors() the number of configured executors} , configurations
+     *   will be chosen based on a modulo operation with the {@link hudson.model.Executor#getNumber() executor's number}.
+     * - equal to or greater than {@link #getNumExecutors() the number of configured executors},
+     *   configurations will be picked based on {@link hudson.model.Executor#getNumber() executor's number}
+     *   (executor #0 gets config #0, executor #1 gets config #1,...)
+     *
+     * @param executorConfigs configurations
+     */
+    public void setExecutorConfigs(List<ExecutorConfig> executorConfigs)
+    {
+        this.executorConfigs = executorConfigs == null ? new ArrayList<>() : executorConfigs;
+    }
 }

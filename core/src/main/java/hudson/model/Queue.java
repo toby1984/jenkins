@@ -107,6 +107,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import net.jcip.annotations.GuardedBy;
@@ -272,6 +273,28 @@ public class Queue extends ResourceController implements Saveable {
             Node node = getNode();
             if (node == null) {
                 return CauseOfBlockage.fromMessage(Messages._Queue_node_has_been_removed_from_configuration(executor.getOwner().getDisplayName()));
+            }
+            if ( item.task instanceof AbstractProject) {
+                final List<ExecutorConfig> configs = Jenkins.get().getExecutorConfigs();
+                if ( ! configs.isEmpty() ) {
+
+                    final Tags tags = ((AbstractProject<?,?>) item.task).getTags();
+
+                    final int number = getExecutor().getNumber();
+                    final ExecutorConfig config = configs.get(number % configs.size());
+
+                    final String expression = config.getTagExpression();
+                    if ( expression != null && expression.trim().length() > 0 ) {
+                        final Pattern p = Pattern.compile(expression);
+                        boolean matches = false;
+                        for ( int i = 0, len=tags.size(); ! matches && i < len ; i++ ) {
+                            matches = p.matcher(tags.get(i).getName()).matches();
+                        }
+                        if ( ! matches ) {
+                            return new CauseOfBlockage.BecauseTagsNotMatched();
+                        }
+                    }
+                }
             }
             CauseOfBlockage reason = node.canTake(item);
             if (reason != null) {
